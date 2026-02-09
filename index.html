@@ -2,139 +2,176 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Gianni Navigator | Dossiers Complets</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigator OS | Root Terminal</title>
     <style>
-        :root { --bg: #0a0a12; --card: #151525; --accent: #00f2ff; --text: #e0e0e0; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; }
-        .container { max-width: 1100px; margin: auto; }
+        :root { --bg: #050508; --card: #0d0d1a; --accent: #00f2ff; --text: #e0e0e0; --red: #ff2e63; }
+        body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; }
         
-        .header { display: flex; justify-content: space-between; border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 30px; }
-        
-        /* Grid des Dossiers */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-        .dossier-card { background: var(--card); border-radius: 15px; padding: 20px; border-left: 5px solid var(--accent); }
-        .dossier-card h2 { margin: 0; color: var(--accent); }
-        .info-row { font-size: 0.8em; color: #aaa; margin: 5px 0; }
-        
-        /* Stats */
-        .stat-bar { background: #000; height: 8px; border-radius: 4px; margin: 8px 0; overflow: hidden; }
-        .stat-fill { height: 100%; transition: width 0.6s; }
+        /* Header */
+        header { border-bottom: 2px solid var(--accent); display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; margin-bottom: 30px; }
+        .btn-root { background: transparent; color: #444; border: 1px solid #222; padding: 8px 15px; cursor: pointer; border-radius: 4px; }
+        .btn-root:hover { border-color: var(--accent); color: var(--accent); }
 
-        /* Formulaires Admin */
-        #admin-panel { display: none; background: #1a1a30; padding: 25px; border-radius: 15px; margin-top: 40px; }
-        .form-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        input, textarea, select { background: #0a0a12; color: white; border: 1px solid #333; padding: 10px; border-radius: 5px; }
-        button { background: var(--accent); color: black; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        /* Menu Root */
+        #root-panel { display: none; background: #111; border: 1px solid #333; padding: 20px; border-radius: 8px; margin-bottom: 40px; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; background: #1a1a1a; color: white; border: none; cursor: pointer; border-bottom: 3px solid transparent; }
+        .tab-btn.active { background: #222; border-bottom-color: var(--accent); color: var(--accent); }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+
+        /* Formulaires */
+        .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        input, textarea, select { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: var(--accent); border-radius: 4px; box-sizing: border-box; }
+        .main-btn { width: 100%; padding: 15px; margin-top: 15px; background: var(--accent); border: none; font-weight: bold; cursor: pointer; }
+        .main-btn:hover { opacity: 0.8; }
+
+        /* Archives */
+        .archives { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        .card { background: var(--card); border: 1px solid #222; border-radius: 8px; overflow: hidden; position: relative; }
+        .card-header { padding: 15px; background: #15152a; border-bottom: 1px solid #222; }
+        .card-body { padding: 15px; }
+        .tag { font-size: 0.7em; background: var(--accent); color: black; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
+        
+        /* Stats Bars */
+        .stat-row { margin-bottom: 12px; }
+        .stat-label { font-size: 0.75em; display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .bar-bg { background: #000; height: 6px; border-radius: 3px; }
+        .bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <h1>📑 ARCHIVES GIANNI</h1>
-        <button style="background:transparent; color:white; border:1px solid #333;" onclick="unlock()">🔒 Accès Root</button>
-    </div>
+    <header>
+        <h1>[NAVIGATOR_OS_V4]</h1>
+        <button class="btn-root" id="lock-btn" onclick="login()">🔒 LOGIN_ROOT</button>
+    </header>
 
-    <div id="app" class="grid"></div>
-
-    <div id="admin-panel">
-        <h2 style="color:var(--accent)">🆕 Nouveau Dossier Complet</h2>
-        <div class="form-group">
-            <input type="text" id="id" placeholder="ID Unique (ex: GianniB)">
-            <select id="cat">
-                <option value="🎮 Jeux Vidéo">🎮 Jeux Vidéo</option>
-                <option value="🏫 École">🏫 École</option>
-                <option value="🏀 Sport">Sport</option>
-            </select>
-            <input type="text" id="prenom" placeholder="Prénom">
-            <input type="text" id="nom" placeholder="Nom">
-            <input type="date" id="dob">
-            <textarea id="bio" placeholder="Notes / Biographie rapide" style="grid-column: span 2"></textarea>
+    <div id="root-panel">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('tab1', this)">1. CRÉER DOSSIER</button>
+            <button class="tab-btn" onclick="switchTab('tab2', this)">2. MODIFIER STATS</button>
+            <button class="tab-btn" onclick="switchTab('tab3', this)">3. GÉRER / SUPPRIMER</button>
         </div>
-        <button onclick="createDossier()">CRÉER LE DOSSIER</button>
-        
-        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #333;">
-        
-        <h3>📈 Modifier les Statistiques</h3>
-        <input type="text" id="upd-id" placeholder="ID de l'ami">
-        <select id="upd-stat">
-            <option value="Loyauté">Loyauté</option>
-            <option value="Respect">Respect</option>
-            <option value="Skill">Skill</option>
-        </select>
-        <input type="number" id="upd-val" placeholder="+/- %">
-        <button onclick="updateStat()">MODIFIER</button>
+
+        <div id="tab1" class="tab-content active">
+            <div class="grid-form">
+                <input type="text" id="c_id" placeholder="ID UNIQUE (ex: GianiB)">
+                <select id="c_cat">
+                    <option value="🎮 JEUX VIDÉO">JEUX VIDÉO</option>
+                    <option value="🏫 ÉCOLE">ÉCOLE</option>
+                    <option value="🏀 LOISIRS">LOISIRS</option>
+                </select>
+                <input type="text" id="c_prenom" placeholder="Prénom">
+                <input type="text" id="c_nom" placeholder="Nom">
+                <input type="date" id="c_dob">
+                <textarea id="c_bio" placeholder="Notes biographiques..." style="grid-column: span 2"></textarea>
+            </div>
+            <button class="main-btn" onclick="apiCall('/create', 'c')">INITIALISER L'ARCHIVE</button>
+        </div>
+
+        <div id="tab2" class="tab-content">
+            <input type="text" id="u_id" placeholder="ID de l'ami">
+            <select id="u_stat">
+                <option value="Loyauté">Loyauté</option>
+                <option value="Respect">Respect</option>
+                <option value="Skill">Skill</option>
+            </select>
+            <input type="number" id="u_val" placeholder="Valeur à ajouter (ex: 10 ou -5)">
+            <button class="main-btn" onclick="apiCall('/update', 'u')">METTRE À JOUR</button>
+        </div>
+
+        <div id="tab3" class="tab-content">
+            <input type="text" id="d_id" placeholder="ID à supprimer">
+            <button class="main-btn" style="background:var(--red)" onclick="apiCall('/delete', 'd')">SUPPRIMER DÉFINITIVEMENT</button>
+        </div>
     </div>
+
+    <div id="display" class="archives"></div>
 </div>
 
 <script>
     const API_URL = "https://economically-pseudoetymological-serenity.ngrok-free.dev";
-    let myCode = "";
+    let authCode = "";
 
-    function unlock() {
-        const c = prompt("Code d'accès :");
-        if(c === "ExpA22") { myCode = c; document.getElementById('admin-panel').style.display = "block"; }
-    }
-
-    async function load() {
-        const res = await fetch(`${API_URL}/data`, { headers: {"ngrok-skip-browser-warning": "1"} });
-        const data = await res.json();
-        const app = document.getElementById('app');
-        app.innerHTML = "";
-
-        for (const [id, info] of Object.entries(data)) {
-            let html = `
-                <div class="dossier-card">
-                    <small style="float:right">${info.category}</small>
-                    <h2>${info.prenom} ${info.nom.toUpperCase()}</h2>
-                    <div class="info-row">📅 Né le : ${info.dob}</div>
-                    <div style="font-size:0.85em; margin: 10px 0;"><em>"${info.bio}"</em></div>
-                    <hr style="border:0; border-top:1px solid #222">`;
-            
-            for (const [sName, sVal] of Object.entries(info.stats)) {
-                let color = sVal > 50 ? "#00ff88" : "#ff2e63";
-                html += `
-                    <div style="font-size:0.7em; margin-top:10px;">${sName.toUpperCase()} : ${sVal}%</div>
-                    <div class="stat-bar"><div class="stat-fill" style="width:${sVal}%; background:${color}"></div></div>`;
-            }
-            html += `</div>`;
-            app.innerHTML += html;
+    function login() {
+        const code = prompt("ENTREZ CODE D'ACCÈS :");
+        if(code === "ExpA22") {
+            authCode = code;
+            document.getElementById('root-panel').style.display = "block";
+            document.getElementById('lock-btn').innerText = "🔓 ROOT_ACTIVE";
         }
     }
 
-    async function createDossier() {
-        await fetch(`${API_URL}/create_dossier`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json', "ngrok-skip-browser-warning": "1"},
-            body: JSON.stringify({
-                ami_id: document.getElementById('id').value,
-                prenom: document.getElementById('prenom').value,
-                nom: document.getElementById('nom').value,
-                dob: document.getElementById('dob').value,
-                bio: document.getElementById('bio').value,
-                category: document.getElementById('cat').value,
-                access_code: myCode
-            })
-        });
-        load();
+    function switchTab(id, btn) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        btn.classList.add('active');
     }
 
-    async function updateStat() {
-        await fetch(`${API_URL}/update_stat`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json', "ngrok-skip-browser-warning": "1"},
-            body: JSON.stringify({
-                ami_id: document.getElementById('upd-id').value,
-                stat_name: document.getElementById('upd-stat').value,
-                change: parseInt(document.getElementById('upd-val').value),
-                access_code: myCode
-            })
-        });
-        load();
+    async function refresh() {
+        try {
+            const res = await fetch(`${API_URL}/data`, { headers: {"ngrok-skip-browser-warning": "1"} });
+            const data = await res.json();
+            const display = document.getElementById('display');
+            display.innerHTML = "";
+
+            for (const [id, info] of Object.entries(data)) {
+                let statsHtml = "";
+                for (const [sName, sVal] of Object.entries(info.stats)) {
+                    let color = sVal > 60 ? "#00ff88" : (sVal > 30 ? "#ffd700" : "#ff2e63");
+                    statsHtml += `
+                        <div class="stat-row">
+                            <div class="stat-label"><span>${sName}</span><span>${sVal}%</span></div>
+                            <div class="bar-bg"><div class="bar-fill" style="width:${sVal}%; background:${color}"></div></div>
+                        </div>`;
+                }
+
+                display.innerHTML += `
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="tag">${info.category}</span>
+                            <h2 style="margin: 10px 0 0 0">${info.prenom} ${info.nom}</h2>
+                            <small style="color: #555">FILE_ID: ${id}</small>
+                        </div>
+                        <div class="card-body">
+                            <p style="font-size: 0.8em; margin-bottom: 20px; color: #aaa;">${info.bio || "Aucune note."}</p>
+                            ${statsHtml}
+                        </div>
+                    </div>`;
+            }
+        } catch (e) { console.error("Serveur hors-ligne"); }
     }
 
-    setInterval(load, 5000);
-    load();
+    async function apiCall(endpoint, prefix) {
+        let body = { access_code: authCode };
+        if(prefix === 'c') {
+            body = {...body, ami_id: v('c_id'), prenom: v('c_prenom'), nom: v('c_nom'), dob: v('c_dob'), bio: v('c_bio'), category: v('c_cat')};
+        } else if(prefix === 'u') {
+            body = {...body, ami_id: v('u_id'), stat_name: v('u_stat'), change: parseInt(v('u_val'))};
+        } else {
+            if(!confirm("Supprimer ?")) return;
+            body = {...body, ami_id: v('d_id')};
+        }
+
+        await fetch(`${API_URL}${endpoint}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', "ngrok-skip-browser-warning": "1"},
+            body: JSON.stringify(body)
+        });
+        refresh();
+    }
+
+    function v(id) { return document.getElementById(id).value; }
+
+    setInterval(refresh, 5000);
+    refresh();
 </script>
 </body>
 </html>
