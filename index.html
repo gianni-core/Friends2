@@ -2,175 +2,187 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Navigator OS | Root Terminal</title>
+    <title>Navigator OS | Interface G-III</title>
     <style>
-        :root { --bg: #050508; --card: #0d0d1a; --accent: #00f2ff; --text: #e0e0e0; --red: #ff2e63; }
-        body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: auto; }
+        :root { --neon: #00f2ff; --bg: #030305; --surface: #0a0a12; --border: #1a1a2e; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; }
         
-        /* Header */
-        header { border-bottom: 2px solid var(--accent); display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; margin-bottom: 30px; }
-        .btn-root { background: transparent; color: #444; border: 1px solid #222; padding: 8px 15px; cursor: pointer; border-radius: 4px; }
-        .btn-root:hover { border-color: var(--accent); color: var(--accent); }
+        /* Glassmorphism Header */
+        header { 
+            padding: 20px 50px; background: rgba(10, 10, 18, 0.8); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; sticky: top; 
+        }
 
-        /* Menu Root */
-        #root-panel { display: none; background: #111; border: 1px solid #333; padding: 20px; border-radius: 8px; margin-bottom: 40px; }
-        .tabs { display: flex; gap: 5px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 12px; background: #1a1a1a; color: white; border: none; cursor: pointer; border-bottom: 3px solid transparent; }
-        .tab-btn.active { background: #222; border-bottom-color: var(--accent); color: var(--accent); }
-        .tab-content { display: none; animation: fadeIn 0.3s; }
-        .tab-content.active { display: block; }
-
-        /* Formulaires */
-        .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        input, textarea, select { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: var(--accent); border-radius: 4px; box-sizing: border-box; }
-        .main-btn { width: 100%; padding: 15px; margin-top: 15px; background: var(--accent); border: none; font-weight: bold; cursor: pointer; }
-        .main-btn:hover { opacity: 0.8; }
-
-        /* Archives */
-        .archives { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-        .card { background: var(--card); border: 1px solid #222; border-radius: 8px; overflow: hidden; position: relative; }
-        .card-header { padding: 15px; background: #15152a; border-bottom: 1px solid #222; }
-        .card-body { padding: 15px; }
-        .tag { font-size: 0.7em; background: var(--accent); color: black; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
+        /* Container & Cards */
+        .container { padding: 40px; max-width: 1400px; margin: auto; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px; }
         
+        .card { 
+            background: var(--surface); border: 1px solid var(--border); border-radius: 20px; 
+            padding: 25px; transition: 0.4s; position: relative; overflow: hidden;
+        }
+        .card:hover { border-color: var(--neon); box-shadow: 0 0 20px rgba(0, 242, 255, 0.1); }
+        .card::before { content: ""; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--neon); }
+
+        /* Edition Overlay */
+        #editor { 
+            display: none; position: fixed; top: 0; right: 0; width: 450px; height: 100%; 
+            background: #0d0d16; border-left: 1px solid var(--neon); padding: 40px; z-index: 100;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5); overflow-y: auto;
+        }
+
+        /* Inputs Graphiques */
+        input, textarea, select { 
+            width: 100%; background: #000; border: 1px solid #222; color: #fff; 
+            padding: 12px; border-radius: 8px; margin: 10px 0; outline: none;
+        }
+        input:focus { border-color: var(--neon); }
+        
+        .btn-edit { 
+            background: transparent; color: var(--neon); border: 1px solid var(--neon); 
+            padding: 5px 15px; border-radius: 20px; cursor: pointer; float: right; 
+        }
+        .btn-save { background: var(--neon); color: #000; font-weight: bold; border: none; padding: 15px; border-radius: 8px; width: 100%; cursor: pointer; }
+
         /* Stats Bars */
-        .stat-row { margin-bottom: 12px; }
-        .stat-label { font-size: 0.75em; display: flex; justify-content: space-between; margin-bottom: 4px; }
-        .bar-bg { background: #000; height: 6px; border-radius: 3px; }
-        .bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .bar-wrap { background: #000; height: 6px; border-radius: 3px; margin: 10px 0; overflow: hidden; }
+        .bar-fill { height: 100%; background: var(--neon); box-shadow: 0 0 10px var(--neon); transition: 1s ease-out; }
     </style>
 </head>
 <body>
 
+<header>
+    <h1 style="margin:0; letter-spacing: 3px; font-weight: 200;">NAVIGATOR<span style="color:var(--neon); font-weight: 800;">OS</span></h1>
+    <button onclick="login()" id="btn-auth" style="background:none; color:#555; border:1px solid #333; cursor:pointer; border-radius:5px;">[ IDENTIFY_USER ]</button>
+</header>
+
 <div class="container">
-    <header>
-        <h1>[NAVIGATOR_OS_V4]</h1>
-        <button class="btn-root" id="lock-btn" onclick="login()">🔒 LOGIN_ROOT</button>
-    </header>
+    <div id="display-grid" class="grid"></div>
+</div>
 
-    <div id="root-panel">
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('tab1', this)">1. CRÉER DOSSIER</button>
-            <button class="tab-btn" onclick="switchTab('tab2', this)">2. MODIFIER STATS</button>
-            <button class="tab-btn" onclick="switchTab('tab3', this)">3. GÉRER / SUPPRIMER</button>
-        </div>
-
-        <div id="tab1" class="tab-content active">
-            <div class="grid-form">
-                <input type="text" id="c_id" placeholder="ID UNIQUE (ex: GianiB)">
-                <select id="c_cat">
-                    <option value="🎮 JEUX VIDÉO">JEUX VIDÉO</option>
-                    <option value="🏫 ÉCOLE">ÉCOLE</option>
-                    <option value="🏀 LOISIRS">LOISIRS</option>
-                </select>
-                <input type="text" id="c_prenom" placeholder="Prénom">
-                <input type="text" id="c_nom" placeholder="Nom">
-                <input type="date" id="c_dob">
-                <textarea id="c_bio" placeholder="Notes biographiques..." style="grid-column: span 2"></textarea>
-            </div>
-            <button class="main-btn" onclick="apiCall('/create', 'c')">INITIALISER L'ARCHIVE</button>
-        </div>
-
-        <div id="tab2" class="tab-content">
-            <input type="text" id="u_id" placeholder="ID de l'ami">
-            <select id="u_stat">
-                <option value="Loyauté">Loyauté</option>
-                <option value="Respect">Respect</option>
-                <option value="Skill">Skill</option>
-            </select>
-            <input type="number" id="u_val" placeholder="Valeur à ajouter (ex: 10 ou -5)">
-            <button class="main-btn" onclick="apiCall('/update', 'u')">METTRE À JOUR</button>
-        </div>
-
-        <div id="tab3" class="tab-content">
-            <input type="text" id="d_id" placeholder="ID à supprimer">
-            <button class="main-btn" style="background:var(--red)" onclick="apiCall('/delete', 'd')">SUPPRIMER DÉFINITIVEMENT</button>
-        </div>
+<div id="editor">
+    <button onclick="closeEditor()" style="float:right; background:none; color:red; border:none; cursor:pointer;">FERMER ✖</button>
+    <h2 id="edit-title">MODIFIER DOSSIER</h2>
+    <hr style="border:0; border-top:1px solid #222; margin: 20px 0;">
+    
+    <label>ID UNIQUE (Non modifiable)</label>
+    <input type="text" id="ed-id" readonly style="opacity:0.5">
+    
+    <label>Prénom & Nom</label>
+    <div style="display:flex; gap:10px;">
+        <input type="text" id="ed-prenom" placeholder="Prénom">
+        <input type="text" id="ed-nom" placeholder="Nom">
     </div>
 
-    <div id="display" class="archives"></div>
+    <label>Catégorie</label>
+    <select id="ed-cat">
+        <option value="🎮 Jeux Vidéo">Jeux Vidéo</option>
+        <option value="🏫 École">École</option>
+        <option value="💎 Prioritaire">Prioritaire</option>
+    </select>
+
+    <label>Notes</label>
+    <textarea id="ed-bio" rows="4"></textarea>
+
+    <h3 style="color:var(--neon); margin-top:30px;">STATISTIQUES</h3>
+    <div id="ed-stats-list"></div>
+
+    <button class="btn-save" onclick="saveData()" style="margin-top:30px;">APPLIQUER LES CHANGEMENTS</button>
+    <button onclick="deleteData()" style="background:none; color:red; border:none; width:100%; margin-top:15px; cursor:pointer;">Supprimer le dossier</button>
 </div>
 
 <script>
     const API_URL = "https://economically-pseudoetymological-serenity.ngrok-free.dev";
     let authCode = "";
+    let fullData = {};
 
-    function login() {
-        const code = prompt("ENTREZ CODE D'ACCÈS :");
-        if(code === "ExpA22") {
-            authCode = code;
-            document.getElementById('root-panel').style.display = "block";
-            document.getElementById('lock-btn').innerText = "🔓 ROOT_ACTIVE";
-        }
-    }
-
-    function switchTab(id, btn) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        btn.classList.add('active');
+    async function login() {
+        const c = prompt("ENTRER CODE ROOT :");
+        if(c === "ExpA22") { authCode = c; document.getElementById('btn-auth').innerText = "SESSION: GIANNI"; refresh(); }
     }
 
     async function refresh() {
-        try {
-            const res = await fetch(`${API_URL}/data`, { headers: {"ngrok-skip-browser-warning": "1"} });
-            const data = await res.json();
-            const display = document.getElementById('display');
-            display.innerHTML = "";
+        const res = await fetch(`${API_URL}/data`, { headers: {"ngrok-skip-browser-warning":"1"} });
+        fullData = await res.json();
+        const grid = document.getElementById('display-grid');
+        grid.innerHTML = "";
 
-            for (const [id, info] of Object.entries(data)) {
-                let statsHtml = "";
-                for (const [sName, sVal] of Object.entries(info.stats)) {
-                    let color = sVal > 60 ? "#00ff88" : (sVal > 30 ? "#ffd700" : "#ff2e63");
-                    statsHtml += `
-                        <div class="stat-row">
-                            <div class="stat-label"><span>${sName}</span><span>${sVal}%</span></div>
-                            <div class="bar-bg"><div class="bar-fill" style="width:${sVal}%; background:${color}"></div></div>
-                        </div>`;
-                }
-
-                display.innerHTML += `
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="tag">${info.category}</span>
-                            <h2 style="margin: 10px 0 0 0">${info.prenom} ${info.nom}</h2>
-                            <small style="color: #555">FILE_ID: ${id}</small>
-                        </div>
-                        <div class="card-body">
-                            <p style="font-size: 0.8em; margin-bottom: 20px; color: #aaa;">${info.bio || "Aucune note."}</p>
-                            ${statsHtml}
-                        </div>
-                    </div>`;
+        for (const [id, info] of Object.entries(fullData)) {
+            let statsHtml = "";
+            for (const [n, v] of Object.entries(info.stats)) {
+                statsHtml += `<div style="font-size:0.7em; margin-top:10px;">${n} (${v}%)</div><div class="bar-wrap"><div class="bar-fill" style="width:${v}%"></div></div>`;
             }
-        } catch (e) { console.error("Serveur hors-ligne"); }
+
+            grid.innerHTML += `
+                <div class="card">
+                    <button class="btn-edit" onclick="openEditor('${id}')">EDIT</button>
+                    <small style="color:var(--neon)">${info.category}</small>
+                    <h2 style="margin:10px 0 5px 0">${info.prenom} ${info.nom}</h2>
+                    <p style="font-size:0.8em; color:#666; height:40px; overflow:hidden;">${info.bio}</p>
+                    ${statsHtml}
+                </div>`;
+        }
+        checkHash(); // Vérifie si l'URL contient un #Modif:
     }
 
-    async function apiCall(endpoint, prefix) {
-        let body = { access_code: authCode };
-        if(prefix === 'c') {
-            body = {...body, ami_id: v('c_id'), prenom: v('c_prenom'), nom: v('c_nom'), dob: v('c_dob'), bio: v('c_bio'), category: v('c_cat')};
-        } else if(prefix === 'u') {
-            body = {...body, ami_id: v('u_id'), stat_name: v('u_stat'), change: parseInt(v('u_val'))};
-        } else {
-            if(!confirm("Supprimer ?")) return;
-            body = {...body, ami_id: v('d_id')};
-        }
+    function openEditor(id) {
+        if(!authCode) return alert("Accès Root requis.");
+        window.location.hash = `Modif:${id}`;
+        const info = fullData[id];
+        
+        document.getElementById('editor').style.display = "block";
+        document.getElementById('ed-id').value = id;
+        document.getElementById('ed-prenom').value = info.prenom;
+        document.getElementById('ed-nom').value = info.nom;
+        document.getElementById('ed-cat').value = info.category;
+        document.getElementById('ed-bio').value = info.bio;
 
-        await fetch(`${API_URL}${endpoint}`, {
+        const statList = document.getElementById('ed-stats-list');
+        statList.innerHTML = "";
+        for (const [n, v] of Object.entries(info.stats)) {
+            statList.innerHTML += `<label>${n}</label><input type="range" class="stat-slider" data-name="${n}" value="${v}" min="0" max="100" oninput="this.nextElementSibling.innerText = this.value + '%'"> <span>${v}%</span>`;
+        }
+    }
+
+    function checkHash() {
+        const h = window.location.hash;
+        if(h.startsWith("#Modif:")) {
+            const id = h.split(":")[1];
+            if(fullData[id]) openEditor(id);
+        }
+    }
+
+    function closeEditor() {
+        document.getElementById('editor').style.display = "none";
+        window.location.hash = "";
+    }
+
+    async function saveData() {
+        const id = document.getElementById('ed-id').value;
+        const stats = {};
+        document.querySelectorAll('.stat-slider').forEach(s => { stats[s.dataset.name] = parseInt(s.value); });
+
+        const payload = {
+            ami_id: id,
+            prenom: document.getElementById('ed-prenom').value,
+            nom: document.getElementById('ed-nom').value,
+            dob: "2000-01-01", // Tu peux rajouter un input date si besoin
+            bio: document.getElementById('ed-bio').value,
+            category: document.getElementById('ed-cat').value,
+            stats: stats,
+            access_code: authCode
+        };
+
+        await fetch(`${API_URL}/full_update`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json', "ngrok-skip-browser-warning": "1"},
-            body: JSON.stringify(body)
+            headers: {'Content-Type': 'application/json', "ngrok-skip-browser-warning":"1"},
+            body: JSON.stringify(payload)
         });
+        closeEditor();
         refresh();
     }
 
-    function v(id) { return document.getElementById(id).value; }
-
-    setInterval(refresh, 5000);
+    window.onhashchange = checkHash;
     refresh();
 </script>
 </body>
