@@ -6,72 +6,56 @@
     <title>Gianni Navigator | Dashboard</title>
     <style>
         :root { --bg: #0b0b14; --card: #161625; --accent: #ff2e63; --text: #eaeaea; --bar-bg: #1f1f33; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 20px; line-height: 1.6; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; }
         .container { max-width: 800px; margin: auto; }
-        
-        h1 { text-align: center; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
-
+        h1 { text-align: center; color: var(--accent); }
         .ami-card { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 4px solid var(--accent); }
-        .ami-name { font-size: 1.4em; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-
         .stat-block { margin-bottom: 12px; }
         .stat-info { display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 4px; }
         .bar-container { background: var(--bar-bg); height: 10px; border-radius: 5px; overflow: hidden; }
-        .bar-fill { height: 100%; background: linear-gradient(90deg, #ff2e63, #ff6b6b); transition: width 0.8s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
-
-        .admin-box { background: #1a1a2e; border: 1px solid #333; padding: 20px; border-radius: 12px; margin-top: 40px; }
-        .admin-box h3 { margin-top: 0; color: #08d9d6; }
+        .bar-fill { height: 100%; background: var(--accent); transition: width 0.5s; }
+        .admin-box { background: #1a1a2e; padding: 20px; border-radius: 12px; margin-top: 40px; }
         .form-group { display: flex; flex-wrap: wrap; gap: 10px; }
-        
-        input, select, button { padding: 12px; border-radius: 6px; border: none; font-size: 14px; }
-        input, select { background: #252545; color: white; flex: 1; min-width: 150px; }
-        button { background: var(--accent); color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:hover { opacity: 0.8; transform: translateY(-2px); }
+        input, select, button { padding: 10px; border-radius: 5px; border: none; }
+        button { background: var(--accent); color: white; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>📊 Système Gianni Navigator</h1>
-    
-    <div id="app"></div>
+    <h1>📊 Gianni Navigator</h1>
+    <div id="app">Chargement...</div>
 
     <div class="admin-box">
-        <h3>⚙️ Panneau de Contrôle</h3>
+        <h3>⚙️ Administration</h3>
         <div class="form-group">
-            <input type="text" id="target-name" placeholder="Nom de l'ami (ex: Alex)">
+            <input type="text" id="target-name" placeholder="Nom">
             <select id="target-stat">
                 <option value="Réputation">Réputation 🌟</option>
                 <option value="Bonté">Bonté ❤️</option>
                 <option value="Loyauté">Loyauté 🛡️</option>
-                <option value="Humour">Humour 😂</option>
-                <option value="Soutien">Soutien 🤝</option>
-                <option value="Fiabilité">Fiabilité ✅</option>
             </select>
-            <input type="number" id="target-change" placeholder="+/- % (ex: 5)">
+            <input type="number" id="target-change" placeholder="+/- %">
             <button onclick="sendUpdate()">Appliquer</button>
         </div>
     </div>
 </div>
 
 <script>
-    // TON ADRESSE SERVEUR
+    // METS TON LIEN NGROK ICI (change à chaque redémarrage du serveur)
     const API_URL = "https://economically-pseudoetymological-serenity.ngrok-free.dev";
 
     async function refreshData() {
         try {
-            const response = await fetch(`${API_URL}/stats`);
+            const response = await fetch(`${API_URL}/stats`, {
+                headers: { "ngrok-skip-browser-warning": "69420" }
+            });
             const stats = await response.json();
             const app = document.getElementById('app');
             app.innerHTML = "";
 
-            if (Object.keys(stats).length === 0) {
-                app.innerHTML = "<p style='text-align:center; opacity:0.5;'>Aucune donnée. Ajoutez un ami ci-dessous !</p>";
-                return;
-            }
-
             for (const [name, data] of Object.entries(stats)) {
-                let card = `<div class="ami-card"><div class="ami-name">👤 ${name}</div>`;
+                let card = `<div class="ami-card"><strong>👤 ${name}</strong><br><br>`;
                 for (const [sName, sVal] of Object.entries(data)) {
                     card += `
                         <div class="stat-block">
@@ -83,7 +67,8 @@
                 app.innerHTML += card;
             }
         } catch (err) {
-            console.error("Erreur serveur :", err);
+            document.getElementById('app').innerHTML = "Erreur de connexion au serveur.";
+            console.error(err);
         }
     }
 
@@ -92,22 +77,25 @@
         const stat = document.getElementById('target-stat').value;
         const val = document.getElementById('target-change').value;
 
-        if (!name || !val) return alert("Remplis tous les champs !");
+        if (!name || !val) return alert("Champs vides !");
 
-        await fetch(`${API_URL}/update`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ami_name: name, stat_name: stat, change: parseInt(val)})
-        });
-        
-        document.getElementById('target-change').value = ""; // Reset champ
-        refreshData();
+        try {
+            await fetch(`${API_URL}/update`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': '69420'
+                },
+                body: JSON.stringify({ami_name: name, stat_name: stat, change: parseInt(val)})
+            });
+            refreshData();
+        } catch (err) {
+            alert("Erreur lors de la mise à jour.");
+        }
     }
 
-    // Chargement initial et rafraîchissement auto toutes les 10 sec
     refreshData();
-    setInterval(refreshData, 10000);
+    setInterval(refreshData, 5000);
 </script>
-
 </body>
 </html>
