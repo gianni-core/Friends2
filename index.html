@@ -2,119 +2,142 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Navigator | Enterprise</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+    <title>Navigator OS</title>
     <style>
-        :root { --bg: #0f172a; --surf: #1e293b; --prim: #38bdf8; --txt: #f1f5f9; }
-        body { background: var(--bg); color: var(--txt); font-family: 'Inter', sans-serif; margin: 0; }
-        header { display: flex; justify-content: space-between; padding: 20px 40px; border-bottom: 1px solid #334155; align-items: center; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 40px; }
-        .card { background: var(--surf); padding: 20px; border-radius: 12px; border: 1px solid #334155; cursor: pointer; }
-        .stat-bar { height: 6px; background: #334155; border-radius: 3px; margin: 5px 0 10px 0; overflow: hidden; }
-        .stat-fill { height: 100%; background: var(--prim); transition: 0.3s; }
-        #editor { position: fixed; right: -500px; top: 0; width: 400px; height: 100%; background: var(--surf); padding: 30px; transition: 0.4s; z-index: 1000; overflow-y: auto; border-left: 2px solid var(--prim); }
+        :root { --bg: #0b0f1a; --card: #161c2d; --accent: #3b82f6; --text: #e2e8f0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; }
+        
+        /* Layout */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: #111827; border-bottom: 1px solid #1f2937; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding: 30px; }
+        
+        /* Cards */
+        .card { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #2d3748; transition: 0.2s; position: relative; }
+        .card:hover { border-color: var(--accent); transform: translateY(-3px); }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .status-actif { background: #10b981; }
+        .status-pause { background: #f59e0b; }
+        .status-archive { background: #ef4444; }
+        
+        .avatar-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; background: #334155; }
+        
+        /* Stats */
+        .progress-container { margin: 10px 0; font-size: 12px; }
+        .progress-bg { background: #334155; height: 6px; border-radius: 3px; margin-top: 4px; }
+        .progress-fill { background: var(--accent); height: 100%; border-radius: 3px; transition: width 0.5s; }
+
+        /* Modal */
+        #editor { position: fixed; right: -450px; top: 0; width: 400px; height: 100%; background: #111827; padding: 25px; transition: 0.3s; box-shadow: -5px 0 15px rgba(0,0,0,0.5); z-index: 100; overflow-y: auto; }
         #editor.open { right: 0; }
-        input, textarea, select { width: 100%; padding: 10px; margin: 10px 0; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px; }
-        .btn { padding: 10px 20px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
-        .btn-prim { background: var(--prim); color: #0f172a; }
-        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; }
+        input, select, textarea { width: 100%; background: #1f2937; border: 1px solid #374151; color: white; padding: 10px; border-radius: 6px; margin: 8px 0; box-sizing: border-box; }
+        .btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-add { background: var(--accent); color: white; }
     </style>
 </head>
 <body>
 
-<header>
-    <div style="font-weight:800; font-size:1.5rem;">NAVIGATOR</div>
-    <div style="display:flex; gap:10px;">
-        <button class="btn btn-prim" id="add-btn" style="display:none" onclick="openEditor(null)">+ Nouveau</button>
-        <button class="btn" onclick="auth()" id="auth-btn">Connexion</button>
+<div class="navbar">
+    <div style="font-size: 1.5rem; font-weight: 800; color: var(--accent)">NAVIGATOR <span style="font-weight: 300; color: white;">v5</span></div>
+    <div>
+        <button class="btn btn-add" id="btn-new" style="display:none" onclick="showEditor(null)">+ Nouveau Dossier</button>
+        <button class="btn" onclick="login()" id="btn-login" style="background:#374151; color:white;">Connexion Admin</button>
     </div>
-</header>
+</div>
 
-<div class="grid" id="grid"></div>
+<div class="grid" id="main-grid"></div>
 
-<div id="overlay" onclick="closeEditor()"></div>
 <div id="editor">
-    <h2 id="edit-title">Dossier</h2>
-    <input type="text" id="ed-id" placeholder="ID Unique">
-    <input type="text" id="ed-prenom" placeholder="Prénom">
-    <input type="text" id="ed-nom" placeholder="Nom">
-    <select id="ed-cat"><option>Personnel</option><option>Professionnel</option><option>VIP</option></select>
-    <textarea id="ed-bio" placeholder="Notes/Biographie"></textarea>
-    
-    <div style="display:flex; justify-content:space-between; margin-top:20px;">
-        <strong>Stats</strong>
-        <button class="btn" style="font-size:10px;" onclick="addStatRow()">+ Ajouter</button>
+    <h2 id="edit-title">Gestion de Dossier</h2>
+    <label>ID Unique</label><input type="text" id="in-id">
+    <div style="display:flex; gap:10px;">
+        <input type="text" id="in-prenom" placeholder="Prénom">
+        <input type="text" id="in-nom" placeholder="Nom">
     </div>
-    <div id="stats-area"></div>
+    <label>Catégorie</label>
+    <select id="in-cat"><option>Ami</option><option>Travail</option><option>VIP</option><option>Cible</option></select>
+    <label>Statut</label>
+    <select id="in-status"><option value="actif">Actif</option><option value="pause">En attente</option><option value="archive">Terminé / Archivé</option></select>
+    <input type="text" id="in-avatar" placeholder="URL de l'image (Avatar)">
+    <textarea id="in-bio" placeholder="Notes confidentielles..." rows="4"></textarea>
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px;">
+        <b>Statistiques</b>
+        <button class="btn" style="background:#374151; font-size:10px;" onclick="addStatRow()">+ Ajouter</button>
+    </div>
+    <div id="stat-inputs"></div>
 
-    <button class="btn btn-prim" style="width:100%; margin-top:20px;" onclick="save()">Enregistrer</button>
-    <button class="btn" style="width:100%; margin-top:10px; background:red;" id="del-btn" onclick="remove()">Supprimer</button>
+    <button class="btn btn-add" style="width:100%; margin-top:20px;" onclick="save()">💾 Enregistrer</button>
+    <button class="btn" style="width:100%; margin-top:10px; background:#7f1d1d;" id="btn-del" onclick="del()">Supprimer</button>
+    <button class="btn" style="width:100%; margin-top:10px; background:none; border:1px solid #374151; color:white;" onclick="closeEditor()">Annuler</button>
 </div>
 
 <script>
-    // METS TA NOUVELLE URL NGROK ICI
-    const API_URL = "https://economically-pseudoetymological-serenity.ngrok-free.dev";
+    const API = "https://TON-URL-NGROK.ngrok-free.dev"; // METS TON URL ICI
     let DATA = {};
-    let TOKEN = "";
+    let PASS = "";
 
     async function load() {
-        try {
-            const r = await fetch(`${API_URL}/data`, { headers: {"ngrok-skip-browser-warning":"1"} });
-            DATA = await r.json();
-            render();
-        } catch(e) { console.error("Erreur de chargement"); }
-    }
-
-    function render() {
-        const g = document.getElementById('grid');
-        g.innerHTML = "";
-        Object.entries(DATA).forEach(([id, info]) => {
-            let sHtml = "";
-            Object.entries(info.stats).forEach(([k,v]) => {
-                sHtml += `<div style="font-size:11px">${k} (${v}%)</div><div class="stat-bar"><div class="stat-fill" style="width:${v}%"></div></div>`;
+        const r = await fetch(`${API}/data`, { headers: {"ngrok-skip-browser-warning":"1"} });
+        DATA = await r.json();
+        const grid = document.getElementById('main-grid');
+        grid.innerHTML = "";
+        
+        Object.entries(DATA).forEach(([id, d]) => {
+            let stats = "";
+            Object.entries(d.stats).forEach(([n, v]) => {
+                stats += `<div class="progress-container">${n} (${v}%)<div class="progress-bg"><div class="progress-fill" style="width:${v}%"></div></div></div>`;
             });
-            g.innerHTML += `
-                <div class="card" onclick="openEditor('${id}')">
-                    <div style="font-weight:bold; font-size:1.2rem">${info.prenom} ${info.nom}</div>
-                    <div style="color:var(--prim); font-size:12px; margin-bottom:10px">${info.category}</div>
-                    <div style="font-size:13px; color:#94a3b8; margin-bottom:15px">${info.bio}</div>
-                    ${sHtml}
-                </div>`;
+
+            grid.innerHTML += `
+                <div class="card" onclick="showEditor('${id}')">
+                    <div style="display:flex; gap:15px; align-items:center; margin-bottom:15px;">
+                        <img src="${d.avatar || 'https://via.placeholder.com/60'}" class="avatar-img">
+                        <div>
+                            <div style="font-weight:bold">${d.prenom} ${d.nom}</div>
+                            <div style="font-size:11px; color:#94a3b8"><span class="status-dot status-${d.status}"></span> ${d.cat} • ${d.date}</div>
+                        </div>
+                    </div>
+                    <div style="font-size:13px; color:#cbd5e1; height:40px; overflow:hidden;">${d.bio}</div>
+                    <div style="margin-top:15px; border-top:1px solid #1f2937; padding-top:10px;">${stats}</div>
+                </div>
+            `;
         });
     }
 
-    function openEditor(id) {
-        if(!TOKEN) return alert("Connectez-vous d'abord");
+    function showEditor(id) {
+        if(!PASS) return alert("Connexion requise");
         document.getElementById('editor').classList.add('open');
-        document.getElementById('overlay').style.display = "block";
-        const area = document.getElementById('stats-area');
+        const area = document.getElementById('stat-inputs');
         area.innerHTML = "";
 
-        if(id) {
-            const item = DATA[id];
-            document.getElementById('ed-id').value = id;
-            document.getElementById('ed-id').disabled = true;
-            document.getElementById('ed-prenom').value = item.prenom;
-            document.getElementById('ed-nom').value = item.nom;
-            document.getElementById('ed-cat').value = item.category;
-            document.getElementById('ed-bio').value = item.bio;
-            Object.entries(item.stats).forEach(([k,v]) => addStatRow(k,v));
-            document.getElementById('del-btn').style.display = "block";
+        if(id && DATA[id]) {
+            const d = DATA[id];
+            document.getElementById('in-id').value = id;
+            document.getElementById('in-id').disabled = true;
+            document.getElementById('in-prenom').value = d.prenom;
+            document.getElementById('in-nom').value = d.nom;
+            document.getElementById('in-cat').value = d.cat;
+            document.getElementById('in-status').value = d.status;
+            document.getElementById('in-avatar').value = d.avatar;
+            document.getElementById('in-bio').value = d.bio;
+            Object.entries(d.stats).forEach(([k,v]) => addStatRow(k,v));
+            document.getElementById('btn-del').style.display = "block";
         } else {
-            document.getElementById('ed-id').value = "";
-            document.getElementById('ed-id').disabled = false;
-            document.getElementById('ed-prenom').value = "";
-            document.getElementById('ed-nom').value = "";
+            document.getElementById('in-id').value = "";
+            document.getElementById('in-id').disabled = false;
+            document.getElementById('in-prenom').value = "";
+            document.getElementById('in-nom').value = "";
+            document.getElementById('in-bio').value = "";
             addStatRow("Loyauté", 50);
-            document.getElementById('del-btn').style.display = "none";
+            document.getElementById('btn-del').style.display = "none";
         }
     }
 
-    function addStatRow(n="", v=50) {
-        const d = document.createElement('div');
-        d.className = "st-row";
-        d.innerHTML = `<div style="display:flex; gap:5px"><input type="text" value="${n}" class="sn" style="flex:2"><input type="number" value="${v}" class="sv" style="flex:1"></div>`;
-        document.getElementById('stats-area').appendChild(d);
+    function addStatRow(k="", v=50) {
+        const div = document.createElement('div');
+        div.className = "st-row";
+        div.innerHTML = `<div style="display:flex; gap:5px"><input type="text" value="${k}" class="sn" placeholder="Nom stat" style="flex:2"><input type="number" value="${v}" class="sv" style="flex:1"></div>`;
+        document.getElementById('stat-inputs').appendChild(div);
     }
 
     async function save() {
@@ -125,49 +148,48 @@
             if(n) stats[n] = parseInt(v);
         });
 
-        const p = {
-            ami_id: document.getElementById('ed-id').value,
-            prenom: document.getElementById('ed-prenom').value,
-            nom: document.getElementById('ed-nom').value,
-            dob: "N/A", bio: document.getElementById('ed-bio').value,
-            category: document.getElementById('ed-cat').value,
-            stats: stats, access_code: TOKEN
+        const payload = {
+            id: document.getElementById('in-id').value,
+            prenom: document.getElementById('in-prenom').value,
+            nom: document.getElementById('in-nom').value,
+            category: document.getElementById('in-cat').value,
+            status: document.getElementById('in-status').value,
+            bio: document.getElementById('in-bio').value,
+            avatar: document.getElementById('in-avatar').value,
+            stats: stats, code: PASS
         };
 
-        await fetch(`${API_URL}/full_update`, {
-            method: 'POST',
+        await fetch(`${API}/update`, {
+            method: 'POST', 
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(p)
+            body: JSON.stringify(payload)
         });
         closeEditor(); load();
     }
 
-    async function remove() {
-        if(!confirm("Supprimer ?")) return;
-        await fetch(`${API_URL}/delete`, {
+    async function del() {
+        if(!confirm("Supprimer ce dossier définitivement ?")) return;
+        await fetch(`${API}/delete`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ami_id: document.getElementById('ed-id').value, access_code: TOKEN})
+            body: JSON.stringify({id: document.getElementById('in-id').value, code: PASS})
         });
         closeEditor(); load();
     }
 
-    function auth() {
-        const p = prompt("Code :");
+    function login() {
+        const p = prompt("Code d'accès :");
         if(p === "ExpA22") {
-            TOKEN = p;
-            document.getElementById('auth-btn').innerText = "Admin ✅";
-            document.getElementById('add-btn').style.display = "block";
+            PASS = p;
+            document.getElementById('btn-login').innerText = "Admin Connecté";
+            document.getElementById('btn-new').style.display = "block";
         }
     }
 
-    function closeEditor() {
-        document.getElementById('editor').classList.remove('open');
-        document.getElementById('overlay').style.display = "none";
-    }
+    function closeEditor() { document.getElementById('editor').classList.remove('open'); }
 
     load();
-    setInterval(load, 15000);
+    setInterval(load, 20000);
 </script>
 </body>
 </html>
