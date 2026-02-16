@@ -8,25 +8,18 @@
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; }
         .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: #0a0c14; border-bottom: 1px solid #1f2937; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; padding: 30px; }
-        
         .public-card { background: var(--card); border: 1px solid #2d3748; padding: 30px; border-radius: 8px; text-align: center; cursor: pointer; transition: 0.3s; }
         .public-card:hover { border-color: var(--accent); transform: translateY(-3px); }
         .id-badge { font-family: monospace; color: var(--accent); font-weight: bold; font-size: 1.2rem; }
-
         #editor { position: fixed; right: -500px; top: 0; width: 450px; height: 100%; background: #0a0c14; padding: 30px; transition: 0.4s; z-index: 100; overflow-y: auto; border-left: 2px solid var(--accent); box-sizing: border-box; }
         #editor.open { right: 0; }
         .cat-chip { display: inline-block; background: #1f2937; padding: 4px 10px; border-radius: 15px; font-size: 10px; margin-right: 5px; margin-top: 5px; border: 1px solid var(--accent); }
-        
         input, select, textarea { width: 100%; background: #161b22; border: 1px solid #30363d; color: white; padding: 10px; border-radius: 6px; margin: 5px 0 15px 0; }
         .check-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
         .check-item { font-size: 12px; display: flex; align-items: center; gap: 5px; }
-        .check-item input { width: auto; margin: 0; }
-        
         .btn { padding: 10px 20px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
         .btn-prim { background: var(--accent); color: white; width: 100%; margin-top: 10px; }
         #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; z-index: 90; }
-
-        /* Stats bars in view mode */
         .stat-bar-bg { background: #1f2937; height: 6px; border-radius: 3px; margin: 5px 0 10px 0; }
         .stat-bar-fill { background: var(--accent); height: 100%; border-radius: 3px; }
     </style>
@@ -42,12 +35,9 @@
 </div>
 
 <div class="grid" id="public-grid"></div>
-
 <div id="overlay" onclick="closeEditor()"></div>
 
 <div id="editor">
-    <h2 id="view-title">Détails</h2>
-    
     <div id="view-only-content">
         <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
             <img id="v-avatar" style="width:70px; height:70px; border-radius:50%; object-fit:cover; background:#111;">
@@ -60,130 +50,93 @@
         <div id="v-stats"></div>
     </div>
 
-    <div id="admin-form" style="display:none; border-top: 1px solid #333; pt-20px; margin-top:20px;">
-        <h3 style="color:var(--accent)">Configuration Admin</h3>
-        <label>ID UNIQUE (ex: dossier_01)</label>
-        <input type="text" id="ed-id">
-        
+    <div id="admin-form" style="display:none; border-top: 1px solid #333; margin-top:20px; padding-top:20px;">
+        <h3 style="color:var(--accent)">Admin Config</h3>
+        <input type="text" id="ed-id" placeholder="ID Unique">
         <div style="display:flex; gap:10px;">
-            <div style="flex:1"><label>Prénom</label><input type="text" id="ed-prenom"></div>
-            <div style="flex:1"><label>Nom</label><input type="text" id="ed-nom"></div>
+            <input type="text" id="ed-prenom" placeholder="Prénom">
+            <input type="text" id="ed-nom" placeholder="Nom">
         </div>
-        
-        <label>CATÉGORIES</label>
         <div class="check-group" id="cat-checks">
             <div class="check-item"><input type="checkbox" value="Ami"> Ami</div>
             <div class="check-item"><input type="checkbox" value="Travail"> Travail</div>
             <div class="check-item"><input type="checkbox" value="VIP"> VIP</div>
             <div class="check-item"><input type="checkbox" value="Cible"> Cible</div>
         </div>
-
-        <label>MOT DE PASSE DU DOSSIER</label>
-        <input type="text" id="ed-pass" placeholder="Requis pour la consultation publique">
-        
-        <label>URL IMAGE AVATAR</label>
-        <input type="text" id="ed-avatar">
-        
-        <label>NOTES / BIO</label>
-        <textarea id="ed-bio" rows="4"></textarea>
-
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <b>STATISTIQUES</b>
-            <button onclick="addStatRow()" style="font-size:10px; background:#333; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">+ Ajouter Stat</button>
-        </div>
-        <div id="ed-stats-area" style="margin-top:10px;"></div>
-        
-        <button class="btn btn-prim" onclick="save()">💾 Enregistrer le Dossier</button>
-        <button class="btn" id="del-btn" style="background:var(--danger); color:white; margin-top:10px; width:100%;" onclick="remove()">Supprimer définitivement</button>
+        <input type="text" id="ed-pass" placeholder="Mot de passe du dossier">
+        <input type="text" id="ed-avatar" placeholder="URL Image">
+        <textarea id="ed-bio" rows="4" placeholder="Biographie"></textarea>
+        <div id="ed-stats-area"></div>
+        <button onclick="addStatRow()" style="width:100%; margin-bottom:10px;">+ Ajouter Stat</button>
+        <button class="btn btn-prim" onclick="save()">💾 Enregistrer</button>
+        <button class="btn" id="del-btn" style="background:var(--danger); color:white; width:100%; margin-top:10px;" onclick="remove()">Supprimer</button>
     </div>
 </div>
 
 <script>
+    // METS TA NOUVELLE URL ICI
     const API = "https://economically-pseudoetymological-serenity.ngrok-free.dev";
     let ADMIN_CODE = "";
 
     async function loadPublic() {
-        const r = await fetch(`${API}/public_list`);
-        const ids = await r.json();
-        const grid = document.getElementById('public-grid');
-        grid.innerHTML = ids.map(id => `
-            <div class="public-card" onclick="accessProfile('${id}')">
-                <div class="id-badge">${id}</div>
-                <div style="font-size:10px; margin-top:10px; color:#475569">ACCÈS SÉCURISÉ</div>
-            </div>
-        `).join('');
+        try {
+            const r = await fetch(`${API}/public_list`, {
+                headers: {"ngrok-skip-browser-warning": "true"}
+            });
+            const ids = await r.json();
+            const grid = document.getElementById('public-grid');
+            grid.innerHTML = ids.map(id => `
+                <div class="public-card" onclick="accessProfile('${id}')">
+                    <div class="id-badge">${id}</div>
+                    <div style="font-size:10px; margin-top:10px; color:#475569">ACCÈS SÉCURISÉ</div>
+                </div>
+            `).join('');
+        } catch(e) { console.error("Erreur de chargement"); }
     }
 
-    // Ouvrir un dossier existant (demande mdp)
     async function accessProfile(id) {
         const pass = prompt(`Mot de passe pour [${id}] :`);
         if(!pass) return;
-
         const r = await fetch(`${API}/get_details`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {'Content-Type': 'application/json', "ngrok-skip-browser-warning": "true"},
             body: JSON.stringify({id: id, password: pass})
         });
-
-        if(r.ok) {
-            const data = await r.json();
-            showInEditor(data, false);
-        } else {
-            alert("Accès refusé.");
-        }
+        if(r.ok) showInEditor(await r.json(), false);
+        else alert("Accès refusé.");
     }
 
-    // Ouvrir le formulaire pour un NOUVEAU dossier
     function openNewDossier() {
-        if(!ADMIN_CODE) return;
-        showInEditor({
-            id: "", prenom: "", nom: "", bio: "", avatar: "", 
-            categories: [], stats: {"Loyauté": 50}, profile_pass: ""
-        }, true);
+        showInEditor({id:"", prenom:"", nom:"", bio:"", avatar:"", categories:[], stats:{"Loyauté":50}, password:""}, true);
     }
 
     function showInEditor(data, isNew) {
         document.getElementById('editor').classList.add('open');
         document.getElementById('overlay').style.display = "block";
-        const statsArea = document.getElementById('ed-stats-area');
-        statsArea.innerHTML = "";
-
-        // Si on est Admin, on montre le formulaire
         if(ADMIN_CODE) {
             document.getElementById('admin-form').style.display = "block";
             document.getElementById('view-only-content').style.display = "none";
-            
             document.getElementById('ed-id').value = data.id;
-            document.getElementById('ed-id').disabled = !isNew; // Désactivé si édition
+            document.getElementById('ed-id').disabled = !isNew;
             document.getElementById('ed-prenom').value = data.prenom || "";
             document.getElementById('ed-nom').value = data.nom || "";
             document.getElementById('ed-avatar').value = data.avatar || "";
             document.getElementById('ed-bio').value = data.bio || "";
-            document.getElementById('ed-pass').value = data.password || ""; // Le serveur renvoie le pass si admin ok
-            
-            // Stats
-            if(data.stats) {
-                Object.entries(data.stats).forEach(([k,v]) => addStatRow(k,v));
-            }
-
-            // Checkboxes
+            document.getElementById('ed-pass').value = data.password || "";
+            document.getElementById('ed-stats-area').innerHTML = "";
+            Object.entries(data.stats || {}).forEach(([k,v]) => addStatRow(k,v));
             document.querySelectorAll('#cat-checks input').forEach(cb => {
                 cb.checked = data.categories ? data.categories.includes(cb.value) : false;
             });
-            
-            document.getElementById('del-btn').style.display = isNew ? "none" : "block";
         } else {
-            // Mode Lecture Seule
             document.getElementById('admin-form').style.display = "none";
             document.getElementById('view-only-content').style.display = "block";
             document.getElementById('v-full-name').innerText = `${data.prenom} ${data.nom}`;
             document.getElementById('v-avatar').src = data.avatar || "https://via.placeholder.com/70";
             document.getElementById('v-bio').innerText = data.bio || "Aucune note.";
             document.getElementById('v-cats').innerHTML = data.categories.map(c => `<span class="cat-chip">${c}</span>`).join('');
-            
-            // Affichage des barres de stats
             let sHtml = "";
-            Object.entries(data.stats).forEach(([k,v]) => {
+            Object.entries(data.stats || {}).forEach(([k,v]) => {
                 sHtml += `<div style="font-size:11px; margin-top:10px;">${k} (${v}%)</div>
                           <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${v}%"></div></div>`;
             });
@@ -195,66 +148,51 @@
         const div = document.createElement('div');
         div.className = "stat-input-row";
         div.style = "display:flex; gap:5px; margin-bottom:5px;";
-        div.innerHTML = `<input type="text" value="${k}" class="sk" placeholder="Nom stat" style="flex:2; margin:0">
+        div.innerHTML = `<input type="text" value="${k}" class="sk" placeholder="Stat" style="flex:2; margin:0">
                          <input type="number" value="${v}" class="sv" style="flex:1; margin:0">`;
         document.getElementById('ed-stats-area').appendChild(div);
     }
 
     async function save() {
-        const selectedCats = Array.from(document.querySelectorAll('#cat-checks input:checked')).map(cb => cb.value);
         const stats = {};
         document.querySelectorAll('.stat-input-row').forEach(row => {
             const k = row.querySelector('.sk').value;
             const v = row.querySelector('.sv').value;
             if(k) stats[k] = parseInt(v);
         });
-
-        const payload = {
+        const p = {
             id: document.getElementById('ed-id').value,
             prenom: document.getElementById('ed-prenom').value,
             nom: document.getElementById('ed-nom').value,
-            categories: selectedCats,
-            status: "actif",
-            bio: document.getElementById('ed-bio').value,
+            categories: Array.from(document.querySelectorAll('#cat-checks input:checked')).map(cb => cb.value),
+            status: "actif", bio: document.getElementById('ed-bio').value,
             avatar: document.getElementById('ed-avatar').value,
-            stats: stats,
-            profile_pass: document.getElementById('ed-pass').value,
-            admin_code: ADMIN_CODE
+            stats: stats, profile_pass: document.getElementById('ed-pass').value, admin_code: ADMIN_CODE
         };
-
-        if(!payload.id || !payload.profile_pass) return alert("L'ID et le Mot de Passe dossier sont obligatoires !");
-
-        const r = await fetch(`${API}/update`, {
+        await fetch(`${API}/update`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
+            headers: {'Content-Type': 'application/json', "ngrok-skip-browser-warning": "true"},
+            body: JSON.stringify(p)
         });
-
-        if(r.ok) {
-            closeEditor();
-            loadPublic();
-        } else {
-            alert("Erreur lors de l'enregistrement.");
-        }
+        closeEditor(); loadPublic();
     }
 
     async function remove() {
-        if(!confirm("Supprimer ce dossier ?")) return;
+        if(!confirm("Supprimer ?")) return;
         await fetch(`${API}/delete`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {'Content-Type': 'application/json', "ngrok-skip-browser-warning": "true"},
             body: JSON.stringify({id: document.getElementById('ed-id').value, code: ADMIN_CODE})
         });
         closeEditor(); loadPublic();
     }
 
     function askAdmin() {
-        const p = prompt("Code Administrateur :");
-        if(p === "ExpA22") { // À vérifier par le serveur normalement, mais simplifié ici pour ton test
+        const p = prompt("Code Admin :");
+        if(p === "ExpA22") {
             ADMIN_CODE = p;
             document.getElementById('admin-btn').innerText = "Admin ✅";
             document.getElementById('new-btn').style.display = "block";
-            alert("Mode Admin Activé. Vous pouvez créer ou modifier des dossiers.");
         }
     }
 
