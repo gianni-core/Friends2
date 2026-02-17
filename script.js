@@ -2,10 +2,11 @@ const API = "https://economically-pseudoetymological-serenity.ngrok-free.dev";
 let ADMIN_CODE = "";
 let currentId = "";
 
-// Headers par défaut pour passer Ngrok et le CORS
+// Headers indispensables pour éviter le blocage Ngrok et CORS
 const getHeaders = () => ({
     "ngrok-skip-browser-warning": "true",
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    "Accept": "application/json"
 });
 
 function toggleTheme() {
@@ -17,7 +18,10 @@ function toggleTheme() {
 
 async function loadPublic() {
     try {
-        const r = await fetch(`${API}/public_list`, { headers: getHeaders() });
+        const r = await fetch(`${API}/public_list`, { 
+            method: 'GET',
+            headers: getHeaders() 
+        });
         const ids = await r.json();
         document.getElementById('main-grid').innerHTML = ids.map(id => `
             <div class="public-card" onclick="openProfile('${id}')">
@@ -83,22 +87,33 @@ async function save() {
         badges: document.getElementById('ed-badges').value,
         admin_code: ADMIN_CODE
     };
-    await fetch(`${API}/update`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(p)});
+    await fetch(`${API}/update`, { 
+        method: 'POST', 
+        headers: getHeaders(), 
+        body: JSON.stringify(p)
+    });
     alert("Mis à jour !");
     closeProfile(); loadPublic();
 }
 
 async function remove() {
     if(!confirm("Supprimer ?")) return;
-    await fetch(`${API}/delete`, { method: 'POST', headers: getHeaders(), 
-        body: JSON.stringify({id: document.getElementById('ed-id').value, code: ADMIN_CODE})});
+    await fetch(`${API}/delete`, { 
+        method: 'POST', 
+        headers: getHeaders(), 
+        body: JSON.stringify({id: document.getElementById('ed-id').value, code: ADMIN_CODE})
+    });
     closeProfile(); loadPublic();
 }
 
 async function addReport() {
     const data = { id: currentId, texte: document.getElementById('rep-texte').value, 
                    importance: parseInt(document.getElementById('rep-imp').value), admin_code: ADMIN_CODE };
-    await fetch(`${API}/add_rapport`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(data)});
+    await fetch(`${API}/add_rapport`, { 
+        method: 'POST', 
+        headers: getHeaders(), 
+        body: JSON.stringify(data)
+    });
     document.getElementById('rep-texte').value = "";
     openProfile(currentId);
 }
