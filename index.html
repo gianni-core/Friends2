@@ -2,86 +2,69 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Navigator v11 | Intelligence System</title>
+    <title>Navigator v11.1 | Classified</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<div class="navbar">
-    <div class="logo">NAVIGATOR <span>v11</span></div>
-    <div class="nav-controls">
-        <button id="btn-new" onclick="openNew()" class="btn hidden">+ NOUVEAU</button>
-        <button id="admin-btn" onclick="askAdmin()" class="btn btn-secondary">LOGIN ADMIN</button>
-    </div>
-</div>
-
-<div class="grid" id="main-grid">
+    <div class="navbar">
+        <div class="logo">NAVIGATOR <span>v11.1</span></div>
+        <div class="nav-controls">
+            <button id="btn-new" onclick="openNew()" class="btn hidden">+ NOUVEAU</button>
+            <button id="admin-btn" onclick="askAdmin()" class="btn btn-secondary">ADMIN LOGIN</button>
+        </div>
     </div>
 
-<div id="profile-page" class="modal">
-    <div class="modal-content">
-        <button onclick="closeProfile()" class="btn btn-close">← FERMER LE DOSSIER</button>
+    <div class="grid" id="main-grid"></div>
 
-        <div class="profile-header">
-            <img id="v-avatar" src="" alt="Avatar">
-            <div class="profile-info">
-                <h1 id="v-name"></h1>
-                <div id="v-badges" class="badge-container"></div>
-                <p id="v-job" class="accent-text"></p>
-                <p id="v-loc" class="muted-text"></p>
-            </div>
-        </div>
+    <div id="profile-page" class="modal">
+        <div class="modal-content">
+            <button onclick="closeProfile()" class="btn btn-secondary">← FERMER</button>
 
-        <div class="profile-bio">
-            <h3>RÉSUMÉ DU SUJET</h3>
-            <p id="v-bio"></p>
-        </div>
-
-        <div class="casier-container">
-            <h3>📂 CASIER & RAPPORTS</h3>
-            <div id="v-rapports"></div>
-        </div>
-
-        <div id="admin-editor" class="admin-box hidden">
-            <h3>PARAMÈTRES DU DOSSIER</h3>
-            
-            <div class="admin-grid">
-                <div class="input-group">
-                    <label>ID Unique</label>
-                    <input type="text" id="ed-id" disabled>
+            <div class="profile-header">
+                <img id="v-avatar" src="">
+                <div class="profile-info">
+                    <h1 id="v-name"></h1>
+                    <div id="v-badges" class="badge-container"></div>
+                    <p id="v-job" class="accent-text"></p>
+                    <p id="v-loc" class="muted-text"></p>
                 </div>
-                <div class="input-group">
-                    <label>Mot de Passe du Dossier</label>
-                    <input type="text" id="ed-pass">
-                </div>
-                <input type="text" id="ed-prenom" placeholder="Prénom">
-                <input type="text" id="ed-nom" placeholder="Nom">
-                <input type="text" id="ed-job" placeholder="Profession">
-                <input type="text" id="ed-loc" placeholder="Localisation">
             </div>
 
-            <label>Notes (Censure: **mot**)</label>
-            <textarea id="ed-bio" rows="4"></textarea>
-            
-            <label>Badges (séparés par une virgule)</label>
-            <input type="text" id="ed-badges">
+            <div class="profile-bio">
+                <p id="v-bio"></p>
+            </div>
 
-            <div class="report-adder">
-                <h4>AJOUTER UN RAPPORT</h4>
-                <textarea id="rep-texte" placeholder="Détails de l'incident..."></textarea>
-                <div class="row">
-                    <label>Importance (-5 à +5) :</label>
+            <div class="casier-container">
+                <h3>📂 RAPPORTS D'INCIDENTS</h3>
+                <div id="v-rapports"></div>
+            </div>
+
+            <div id="admin-editor" class="admin-box hidden">
+                <hr>
+                <h3>PANEL D'ADMINISTRATION</h3>
+                <div class="admin-grid">
+                    <input type="text" id="ed-id" placeholder="ID Unique">
+                    <input type="text" id="ed-pass" placeholder="Mot de Passe">
+                    <input type="text" id="ed-prenom" placeholder="Prénom">
+                    <input type="text" id="ed-nom" placeholder="Nom">
+                    <input type="text" id="ed-job" placeholder="Profession">
+                    <input type="text" id="ed-loc" placeholder="Localisation">
+                </div>
+                <textarea id="ed-bio" placeholder="Bio (**secret**)"></textarea>
+                <input type="text" id="ed-badges" placeholder="Badges (virgule)">
+
+                <div class="report-adder">
+                    <h4>AJOUTER UN RAPPORT</h4>
+                    <textarea id="rep-texte" placeholder="Détails..."></textarea>
                     <input type="number" id="rep-imp" value="0">
-                    <button onclick="addReport()" class="btn btn-accent">AJOUTER</button>
+                    <button onclick="addReport()" class="btn btn-accent">ENREGISTRER INCIDENT</button>
                 </div>
-            </div>
 
-            <button onclick="save()" class="btn btn-save">SAUVEGARDER LES MODIFICATIONS</button>
+                <button onclick="save()" class="btn btn-save">SAUVEGARDER DOSSIER</button>
+                <button onclick="remove()" class="btn btn-danger">SUPPRIMER DÉFINITIVEMENT</button>
+            </div>
         </div>
     </div>
-</div>
-
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
