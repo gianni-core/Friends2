@@ -2,209 +2,86 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Navigator v11 | Intelligence System</title>
-    <style>
-        :root { --bg: #030508; --card: #0d1117; --accent: #3b82f6; --text: #f0f6fc; --danger: #f85149; --success: #238636; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; }
-        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background: #0d1117; border-bottom: 1px solid #30363d; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; padding: 40px; }
-        .public-card { background: var(--card); border: 1px solid #30363d; padding: 30px; border-radius: 8px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .public-card:hover { border-color: var(--accent); }
-
-        /* BADGES */
-        .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; background: #21262d; border: 1px solid #30363d; margin-right: 5px; text-transform: uppercase; }
-        .badge-vip { border-color: gold; color: gold; }
-
-        /* CASIER / RAPPORTS */
-        .casier-container { margin-top: 30px; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 20px; }
-        .rapport-item { padding: 10px; border-left: 4px solid #30363d; margin-bottom: 10px; background: #161b22; font-size: 14px; }
-        .rap-pos { border-left-color: var(--success); }
-        .rap-neg { border-left-color: var(--danger); }
-        .rap-neutre { border-left-color: var(--accent); }
-
-        #profile-page { position: fixed; inset: 0; background: var(--bg); z-index: 200; display: none; overflow-y: auto; padding: 40px; }
-        .admin-box { background: #161b22; border: 1px dashed var(--accent); padding: 25px; margin-top: 40px; border-radius: 12px; }
-        input, select, textarea { width: 100%; background: #0d1117; border: 1px solid #30363d; color: white; padding: 10px; margin-bottom: 10px; border-radius: 6px; }
-        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .redacted { background: black; color: black; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="navbar">
-    <div style="font-weight: 900; color: var(--accent); font-size: 1.5rem;">NAVIGATOR <span style="color:white">v11</span></div>
-    <div>
-        <button id="btn-new" onclick="openNew()" style="display:none; background:var(--accent); color:white;" class="btn">+ Nouveau</button>
-        <button id="admin-btn" onclick="askAdmin()" class="btn" style="background:#21262d; color:white;">Admin</button>
+    <div class="logo">NAVIGATOR <span>v11</span></div>
+    <div class="nav-controls">
+        <button id="btn-new" onclick="openNew()" class="btn hidden">+ NOUVEAU</button>
+        <button id="admin-btn" onclick="askAdmin()" class="btn btn-secondary">LOGIN ADMIN</button>
     </div>
 </div>
 
-<div class="grid" id="main-grid"></div>
+<div class="grid" id="main-grid">
+    </div>
 
-<div id="profile-page">
-    <div style="max-width: 800px; margin: auto;">
-        <button onclick="closeProfile()" class="btn" style="background:#333; color:white; margin-bottom:20px;">← Fermer</button>
+<div id="profile-page" class="modal">
+    <div class="modal-content">
+        <button onclick="closeProfile()" class="btn btn-close">← FERMER LE DOSSIER</button>
 
-        <div style="display:flex; gap:30px;">
-            <img id="v-avatar" style="width:150px; height:150px; border-radius:50%; object-fit:cover; border:3px solid #30363d;">
-            <div style="flex:1">
-                <h1 id="v-name" style="margin:0"></h1>
-                <div id="v-badges" style="margin: 10px 0;"></div>
-                <p id="v-job" style="color:var(--accent); margin:5px 0;"></p>
-                <p id="v-loc" style="font-size:0.9em; color:#8b949e"></p>
+        <div class="profile-header">
+            <img id="v-avatar" src="" alt="Avatar">
+            <div class="profile-info">
+                <h1 id="v-name"></h1>
+                <div id="v-badges" class="badge-container"></div>
+                <p id="v-job" class="accent-text"></p>
+                <p id="v-loc" class="muted-text"></p>
             </div>
         </div>
 
-        <div style="margin-top:20px; background:#161b22; padding:20px; border-radius:8px;">
-            <p id="v-bio" style="white-space: pre-wrap;"></p>
+        <div class="profile-bio">
+            <h3>RÉSUMÉ DU SUJET</h3>
+            <p id="v-bio"></p>
         </div>
 
         <div class="casier-container">
-            <h3 style="margin-top:0;">📂 CASIER & RAPPORTS</h3>
+            <h3>📂 CASIER & RAPPORTS</h3>
             <div id="v-rapports"></div>
         </div>
 
-        <div id="admin-editor" class="admin-box" style="display:none;">
-            <h3>ÉDITION ADMIN</h3>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <input type="text" id="ed-id" placeholder="ID Unique">
-                <input type="text" id="ed-pass" placeholder="Mot de Passe Profil">
+        <div id="admin-editor" class="admin-box hidden">
+            <h3>PARAMÈTRES DU DOSSIER</h3>
+            
+            <div class="admin-grid">
+                <div class="input-group">
+                    <label>ID Unique</label>
+                    <input type="text" id="ed-id" disabled>
+                </div>
+                <div class="input-group">
+                    <label>Mot de Passe du Dossier</label>
+                    <input type="text" id="ed-pass">
+                </div>
                 <input type="text" id="ed-prenom" placeholder="Prénom">
                 <input type="text" id="ed-nom" placeholder="Nom">
                 <input type="text" id="ed-job" placeholder="Profession">
                 <input type="text" id="ed-loc" placeholder="Localisation">
             </div>
-            <textarea id="ed-bio" placeholder="Bio... (Utilisez ** pour censurer)"></textarea>
+
+            <label>Notes (Censure: **mot**)</label>
+            <textarea id="ed-bio" rows="4"></textarea>
             
             <label>Badges (séparés par une virgule)</label>
-            <input type="text" id="ed-badges" placeholder="Ex: Elite, Suspect, VIP">
+            <input type="text" id="ed-badges">
 
-            <div style="background:#0d1117; padding:15px; border-radius:8px; margin-top:20px;">
-                <h4>AJOUTER UN RAPPORT AU CASIER</h4>
-                <textarea id="rep-texte" placeholder="Détails du rapport..."></textarea>
-                <label>Niveau d'importance (-5 à +5) :</label>
-                <input type="number" id="rep-imp" value="0" min="-5" max="5">
-                <button onclick="addReport()" class="btn" style="background:var(--accent); color:white; width:100%;">Ajouter au casier</button>
+            <div class="report-adder">
+                <h4>AJOUTER UN RAPPORT</h4>
+                <textarea id="rep-texte" placeholder="Détails de l'incident..."></textarea>
+                <div class="row">
+                    <label>Importance (-5 à +5) :</label>
+                    <input type="number" id="rep-imp" value="0">
+                    <button onclick="addReport()" class="btn btn-accent">AJOUTER</button>
+                </div>
             </div>
 
-            <button onclick="save()" class="btn" style="background:var(--success); color:white; width:100%; margin-top:20px;">SAUVEGARDER LE DOSSIER</button>
+            <button onclick="save()" class="btn btn-save">SAUVEGARDER LES MODIFICATIONS</button>
         </div>
     </div>
 </div>
 
-<script>
-    const API = "https://economically-pseudoetymological-serenity.ngrok-free.dev";
-    let ADMIN_CODE = "";
-
-    async function loadPublic() {
-        const r = await fetch(`${API}/public_list`, { headers: {"ngrok-skip-browser-warning":"1"} });
-        const ids = await r.json();
-        document.getElementById('main-grid').innerHTML = ids.map(id => `
-            <div class="public-card" onclick="openProfile('${id}')">
-                <div style="font-weight:bold; color:var(--accent);">${id}</div>
-                <div style="font-size:10px; color:#555; margin-top:5px;">DOSSIER SCÉLLÉ</div>
-            </div>
-        `).join('');
-    }
-
-    async function openProfile(id) {
-        let pass = ADMIN_CODE ? "" : prompt("Mot de passe du dossier :");
-        if(!ADMIN_CODE && !pass) return;
-
-        const r = await fetch(`${API}/get_details`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json', "ngrok-skip-browser-warning":"1"},
-            body: JSON.stringify({id: id, password: pass, admin_code: ADMIN_CODE})
-        });
-
-        if(r.ok) renderProfile(await r.json());
-        else alert("Accès interdit.");
-    }
-
-    function renderProfile(d) {
-        document.getElementById('profile-page').style.display = "block";
-        
-        const fmt = (t) => t ? t.replace(/██████████/g, '<span class="redacted">CONFIDENTIEL</span>') : "";
-        
-        document.getElementById('v-avatar').src = d.avatar || "https://via.placeholder.com/150";
-        document.getElementById('v-name').innerHTML = `${fmt(d.prenom)} ${fmt(d.nom)}`;
-        document.getElementById('v-job').innerHTML = fmt(d.profession);
-        document.getElementById('v-loc').innerHTML = `Localisation: ${fmt(d.localisation)}`;
-        document.getElementById('v-bio').innerHTML = fmt(d.bio);
-
-        // Affichage des Badges
-        const badgeContainer = document.getElementById('v-badges');
-        badgeContainer.innerHTML = d.badges.split(',').map(b => b.trim() ? `<span class="badge ${b.toLowerCase() === 'vip' ? 'badge-vip' : ''}">${b.trim()}</span>` : '').join('');
-
-        // Affichage des Rapports
-        const rapContainer = document.getElementById('v-rapports');
-        rapContainer.innerHTML = d.rapports.map(r => {
-            let type = "rap-neutre";
-            if(r.importance > 0) type = "rap-pos";
-            if(r.importance < 0) type = "rap-neg";
-            return `<div class="rapport-item ${type}"><strong>[${r.date}] (Imp: ${r.importance})</strong><br>${r.texte}</div>`;
-        }).join('') || "Aucun rapport dans le casier.";
-
-        if(ADMIN_CODE) {
-            document.getElementById('admin-editor').style.display = "block";
-            document.getElementById('ed-id').value = d.id;
-            document.getElementById('ed-id').disabled = true;
-            document.getElementById('ed-prenom').value = d.prenom;
-            document.getElementById('ed-nom').value = d.nom;
-            document.getElementById('ed-pass').value = d.password; // Bug fixé : on charge le vrai mdp
-            document.getElementById('ed-job').value = d.profession;
-            document.getElementById('ed-loc').value = d.localisation;
-            document.getElementById('ed-bio').value = d.bio;
-            document.getElementById('ed-badges').value = d.badges;
-        }
-    }
-
-    async function addReport() {
-        const data = {
-            id: document.getElementById('ed-id').value,
-            texte: document.getElementById('rep-texte').value,
-            importance: parseInt(document.getElementById('rep-imp').value),
-            admin_code: ADMIN_CODE
-        };
-        await fetch(`${API}/add_rapport`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)});
-        alert("Rapport ajouté !");
-        openProfile(data.id); // Refresh
-    }
-
-    async function save() {
-        const p = {
-            id: document.getElementById('ed-id').value,
-            prenom: document.getElementById('ed-prenom').value,
-            nom: document.getElementById('ed-nom').value,
-            categories: ["User"], status: "Actif",
-            bio: document.getElementById('ed-bio').value,
-            avatar: "", stats: {}, 
-            profile_pass: document.getElementById('ed-pass').value || "1234",
-            profession: document.getElementById('ed-job').value,
-            localisation: document.getElementById('ed-loc').value,
-            niveau: "N/A", admin_code: ADMIN_CODE, censored: [],
-            badges: document.getElementById('ed-badges').value
-        };
-        await fetch(`${API}/update`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(p)});
-        closeProfile(); loadPublic();
-    }
-
-    function askAdmin() {
-        const p = prompt("Code Admin :");
-        if(p === "ExpA22") {
-            ADMIN_CODE = p;
-            document.getElementById('btn-new').style.display = "block";
-            alert("Mode Admin Activé");
-        }
-    }
-
-    function openNew() {
-        renderProfile({id:"", prenom:"", nom:"", bio:"", avatar:"", profession:"", localisation:"", badges:"", rapports:[], is_admin:true});
-        document.getElementById('ed-id').disabled = false;
-    }
-
-    function closeProfile() { document.getElementById('profile-page').style.display = "none"; }
-    loadPublic();
-</script>
+<script src="script.js"></script>
 </body>
 </html>
